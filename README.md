@@ -68,3 +68,7 @@ V XAMPP může být nutné použít celou cestu `C:\xampp\php\php.exe`. Přesné
 Neobsahuje platby, permanentky, e-mailová oznámení ani obnovu zapomenutého hesla. Obsahuje hlavní funkce zadání a je základem pro vlastní ověření, úpravy a popis v bakalářské práci. Automatické testy nenahrazují uživatelské testování ve Windows/XAMPP. Při použití generovaného kódu postupujte podle pravidel vedoucího práce a školy a zaznamenejte použití AI.
 
 Bootstrap 5.3.3: © The Bootstrap Authors, licence MIT, viz `assets/BOOTSTRAP-LICENSE`.
+
+## Text bakalářské práce
+
+Aktuální [pracovní verze ve Wordu](docs/Bakalarska_prace_fitness_pracovni_verze.docx) a [informace k dokumentu](docs/README.md) jsou ve složce `docs`.
