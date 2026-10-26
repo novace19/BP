@@ -39,6 +39,18 @@ jobs:
           python3 tests/http.py
       - name: Obchodní pravidla a souběh rezervací
         run: php tests/run.php
+      - name: Prohlížeč a mobilní rozvržení
+        run: |
+          npm install --prefix /tmp/fitness-browser playwright@1.56.1
+          /tmp/fitness-browser/node_modules/.bin/playwright install --with-deps chromium
+          NODE_PATH=/tmp/fitness-browser/node_modules node tests/browser.cjs
+      - name: Snímky aplikace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitness-screenshots
+          path: tests/.runtime/*.png
+          if-no-files-found: ignore
       - name: Protokol serveru při chybě
         if: failure()
         run: cat /tmp/fitness-php.log || true

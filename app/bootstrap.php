@@ -53,7 +53,8 @@ function required(string $key,int $max=1000): string { $s=input($key,$max); if (
 function id_input(string $key): int { $v=filter_var($_POST[$key]??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]); if (!$v) throw new DomainException('Neplatný identifikátor.'); return $v; }
 function number_input(string $key,int $min,int $max): int { $v=filter_var($_POST[$key]??null,FILTER_VALIDATE_INT,['options'=>['min_range'=>$min,'max_range'=>$max]]); if ($v===false || $v===null) throw new DomainException('Číselný údaj je mimo povolený rozsah.'); return $v; }
 function email_input(): string { $v=strtolower(required('email',190)); if (!filter_var($v,FILTER_VALIDATE_EMAIL)) throw new DomainException('Zadejte platný e-mail.'); return $v; }
-function password_input(): string { $v=$_POST['password']??''; if (!is_string($v) || strlen($v)<10 || strlen($v)>72) throw new DomainException('Heslo musí mít 10 až 72 bajtů (alespoň 10 běžných znaků).'); return $v; }
+function raw_password(string $key): string { $v=$_POST[$key]??''; if (!is_string($v) || strlen($v)>200) throw new DomainException('Neplatné heslo.'); return $v; }
+function password_input(): string { $v=raw_password('password'); if (strlen($v)>72 || !preg_match('/^.{10,}$/us',$v)) throw new DomainException('Heslo musí mít alespoň 10 znaků a nejvýše 72 bajtů.'); return $v; }
 function stamp(string $time): string { return date('d. m. Y · H:i',strtotime($time)); }
 function attendance_label(string $v): string { return ['pending'=>'Nepotvrzeno','present'=>'Přítomen','absent'=>'Nepřítomen'][$v]??$v; }
 function transaction(callable $fn) { db()->beginTransaction(); try { $r=$fn(); db()->commit(); return $r; } catch (Throwable $e) { if(db()->inTransaction()) db()->rollBack(); throw $e; } }

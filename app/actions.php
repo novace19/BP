@@ -18,7 +18,7 @@ function handle_action(): void {
     flash('Registrace je hotová. Můžete se přihlásit.'); go('login');
  }
  if ($action==='login') {
-    $email=email_input(); $password=input('password',200);
+    $email=email_input(); $password=raw_password('password');
     $ip=hash('sha256',$_SERVER['REMOTE_ADDR']??'local');
     // Krátké okno omezuje hádání hesel; neukládá se samotná IP adresa.
     query('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 1 DAY');
@@ -43,7 +43,7 @@ function handle_action(): void {
  }
  if ($action==='password') {
     $old=one('SELECT password_hash FROM users WHERE id=?',[$u['id']]);
-    if (!password_verify(input('current_password',200),$old['password_hash'])) throw new DomainException('Současné heslo nesouhlasí.');
+    if (!password_verify(raw_password('current_password'),$old['password_hash'])) throw new DomainException('Současné heslo nesouhlasí.');
     $hash=password_hash(password_input(),PASSWORD_DEFAULT);
     query('UPDATE users SET password_hash=? WHERE id=?',[$hash,$u['id']]); session_regenerate_id(true);
     flash('Heslo je změněné.'); go('profile');
