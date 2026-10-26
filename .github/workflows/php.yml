@@ -55,6 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fitness-screenshots
+          include-hidden-files: true
           path: tests/.runtime/*.png
           if-no-files-found: ignore
       - name: Protokol serveru při chybě
