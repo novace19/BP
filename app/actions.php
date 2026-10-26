@@ -70,7 +70,14 @@ function handle_action(): void {
     $id=id_input('id'); $role=required('role',20); $active=isset($_POST['active'])?1:0;
     if (!in_array($role,['client','admin'],true)) throw new DomainException('Neplatná role.');
     if ($id===(int)$u['id'] && ($role!=='admin' || !$active)) throw new DomainException('Svůj správcovský účet nemůžete deaktivovat ani mu odebrat roli.');
-    query('UPDATE users SET role=?,active=? WHERE id=?',[$role,$active,$id]);
+    transaction(function() use($u,$id,$role,$active) {
+        // Serializace změn správců brání tomu, aby se dva správci navzájem deaktivovali.
+        all('SELECT id FROM users WHERE role="admin" ORDER BY id FOR UPDATE');
+        $actor=one('SELECT active,role FROM users WHERE id=?',[$u['id']]);
+        if (!$actor || !$actor['active'] || $actor['role']!=='admin') throw new DomainException('Správcovské oprávnění již není platné.');
+        if (!one('SELECT id FROM users WHERE id=?',[$id])) throw new DomainException('Uživatel neexistuje.');
+        query('UPDATE users SET role=?,active=? WHERE id=?',[$role,$active,$id]);
+    });
     flash('Uživatel je uložený. Deaktivace blokuje přístup; případné rezervace zrušte v přehledu rezervací.'); go('admin-users');
  }
  throw new DomainException('Neznámá akce.');

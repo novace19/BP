@@ -36,7 +36,7 @@ jobs:
         run: |
           php -S 127.0.0.1:8080 > /tmp/fitness-php.log 2>&1 &
           for i in $(seq 1 20); do curl -s http://127.0.0.1:8080/ > /dev/null && break; sleep 1; done
-          python3 tests/http.py
+          python3 tests/http_smoke.py
       - name: Obchodní pravidla a souběh rezervací
         run: php tests/run.php
       - name: Prohlížeč a mobilní rozvržení

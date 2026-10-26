@@ -57,7 +57,7 @@ GitHub Actions vytvoří samostatnou MariaDB a spustí kontrolu syntaxe, HTTP sc
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php -S 127.0.0.1:8080
 # V dalším terminálu, před prvním vytvořením uživatele:
-python3 tests/http.py
+python3 tests/http_smoke.py
 php tests/run.php
 ```
 
