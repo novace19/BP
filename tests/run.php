@@ -42,9 +42,9 @@ try {
  query('INSERT INTO lessons(name,description,kind,duration_minutes) VALUES (?,?,?,?)',[$prefix,'Test','personal',60]);$lid=(int)db()->lastInsertId();$lids[]=$lid;
  $_POST=['lesson_id'=>$lid,'trainer_id'=>$tid,'room_id'=>$rid,'capacity'=>2,'starts_at'=>date('Y-m-d\TH:i',strtotime('+20 days'))];
  rejects(fn()=>create_session(),'personal capacity must equal one');
- $_POST['capacity']=1; create_session();$new=(int)db()->lastInsertId();$sids[]=$new; check(scalar('SELECT kind FROM sessions WHERE id=?',[$new])==='personal','session snapshots kind');
+ $_POST['capacity']=1; $new=create_session();$sids[]=$new; check(scalar('SELECT kind FROM sessions WHERE id=?',[$new])==='personal','session snapshots kind');
  rejects(fn()=>create_session(),'trainer and room collision rejected');
- $_POST['starts_at']=date('Y-m-d\TH:i',strtotime('+20 days +1 hour'));create_session();$sids[]=(int)db()->lastInsertId();check(true,'adjacent trainer and room sessions allowed');
+ $_POST['starts_at']=date('Y-m-d\TH:i',strtotime('+20 days +1 hour'));$sids[]=create_session();check(true,'adjacent trainer and room sessions allowed');
  query('UPDATE trainers SET active=0 WHERE id=?',[$tid]); $_POST['starts_at']=date('Y-m-d\TH:i',strtotime('+21 days')); rejects(fn()=>create_session(),'inactive trainer rejected');
  query('UPDATE trainers SET active=1 WHERE id=?',[$tid]);query('UPDATE lessons SET kind="group" WHERE id=?',[$lid]);$_POST['capacity']=3;rejects(fn()=>create_session(),'room capacity enforced');
  $_POST['capacity']=1;$_POST['starts_at']='2026-02-30T15:00';rejects(fn()=>create_session(),'invalid date rejected');

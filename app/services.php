@@ -27,11 +27,11 @@ function cancel_booking(int $uid,int $bid,bool $admin=false): void {
     query('UPDATE reservations SET status="cancelled",cancelled_at=NOW(),attendance="pending" WHERE id=?',[$bid]);
  });
 }
-function create_session(): void {
+function create_session(): int {
  $lid=id_input('lesson_id'); $tid=id_input('trainer_id'); $rid=id_input('room_id'); $capacity=number_input('capacity',1,500);
  $text=required('starts_at',30); $start=DateTimeImmutable::createFromFormat('!Y-m-d\TH:i',$text);
  if (!$start || $start->format('Y-m-d\TH:i')!==$text || $start->getTimestamp()<=time()) throw new DomainException('Vyberte platný budoucí termín.');
- transaction(function() use($lid,$tid,$rid,$capacity,$start) {
+ return transaction(function() use($lid,$tid,$rid,$capacity,$start) {
     $l=one('SELECT * FROM lessons WHERE id=? FOR UPDATE',[$lid]);
     $t=one('SELECT * FROM trainers WHERE id=? FOR UPDATE',[$tid]);
     $r=one('SELECT * FROM rooms WHERE id=? FOR UPDATE',[$rid]);
@@ -40,6 +40,7 @@ function create_session(): void {
     $end=$start->modify('+'.(int)$l['duration_minutes'].' minutes');
     if (scalar('SELECT COUNT(*) FROM sessions WHERE status="published" AND (trainer_id=? OR room_id=?) AND starts_at < ? AND ends_at > ?',[$tid,$rid,$end->format('Y-m-d H:i:s'),$start->format('Y-m-d H:i:s')])) throw new DomainException('V tomto čase je trenér nebo sál již obsazený.');
     query('INSERT INTO sessions(lesson_id,trainer_id,room_id,starts_at,ends_at,capacity,kind) VALUES (?,?,?,?,?,?,?)',[$lid,$tid,$rid,$start->format('Y-m-d H:i:s'),$end->format('Y-m-d H:i:s'),$capacity,$l['kind']]);
+    return (int)db()->lastInsertId();
  });
 }
 function cancel_session(int $sid): void {
