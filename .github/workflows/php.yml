@@ -1,0 +1,44 @@
+name: PHP a MariaDB
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: fitness-test-root
+          MARIADB_DATABASE: fitness
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+          coverage: none
+      - name: Syntaxe PHP
+        run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Testovací konfigurace a schéma
+        run: |
+          cat > config.local.php <<'PHP'
+          <?php
+          return ['host'=>'127.0.0.1','port'=>3306,'database'=>'fitness','username'=>'root','password'=>'fitness-test-root'];
+          PHP
+          php -r '$c=require "config.local.php"; $p=new PDO("mysql:host=127.0.0.1;dbname=fitness", "root", $c["password"]); $p->exec(file_get_contents("database/fitness.sql"));'
+      - name: HTTP scénáře
+        run: |
+          php -S 127.0.0.1:8080 > /tmp/fitness-php.log 2>&1 &
+          for i in $(seq 1 20); do curl -s http://127.0.0.1:8080/ > /dev/null && break; sleep 1; done
+          python3 tests/http.py
+      - name: Obchodní pravidla a souběh rezervací
+        run: php tests/run.php
+      - name: Protokol serveru při chybě
+        if: failure()
+        run: cat /tmp/fitness-php.log || true

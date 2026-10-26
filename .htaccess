@@ -1,0 +1,9 @@
+DirectoryIndex index.php
+Options -Indexes
+<FilesMatch "^(config\..*\.php|README\.md|LICENSE.*)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule (^|/)\. - [F]
+</IfModule>
