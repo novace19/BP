@@ -5,6 +5,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       mariadb:
         image: mariadb:11.4
@@ -42,7 +43,12 @@ jobs:
       - name: Prohlížeč a mobilní rozvržení
         run: |
           npm install --prefix /tmp/fitness-browser playwright@1.56.1
-          /tmp/fitness-browser/node_modules/.bin/playwright install --with-deps chromium
+          if command -v google-chrome > /dev/null; then
+            echo "FITNESS_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+            export FITNESS_CHROME=$(command -v google-chrome)
+          else
+            /tmp/fitness-browser/node_modules/.bin/playwright install --with-deps chromium
+          fi
           NODE_PATH=/tmp/fitness-browser/node_modules node tests/browser.cjs
       - name: Snímky aplikace
         if: always()
